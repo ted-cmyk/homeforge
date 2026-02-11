@@ -1,50 +1,70 @@
-type TurnState = "your" | "their";
+"use client";
 
-export type TaskCardModel = {
-  id: string;
-  name: string;
-  emoji: string;
-  lastDoneText: string;
-  turn: TurnState;
-};
+import type { TaskModel } from "@/components/tasks/TasksStore";
 
-function Badge({ turn }: { turn: TurnState }) {
-  if (turn === "your") {
-    return (
-      <span className="rounded-full border border-white/10 bg-gradient-to-b from-[#FFC34D] to-[#E3A82B] px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide text-[#2A1606]">
-        Your Turn
-      </span>
-    );
-  }
-  return (
-    <span className="rounded-full border border-white/10 bg-[#152744]/70 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide text-[#B8C3E6]">
-      Their Turn
-    </span>
-  );
+function badgeStyles(turn: TaskModel["turn"]) {
+  return turn === "your"
+    ? "bg-gradient-to-b from-[#FFC34D] to-[#E3A82B] text-[#2A1606]"
+    : "bg-[#152744]/70 text-[#B8C3E6]";
+}
+
+function freqLabel(f: TaskModel["frequency"]) {
+  if (f === "daily") return "Daily";
+  if (f === "weekly") return "Weekly";
+  return "As needed";
 }
 
 export default function TaskCard({
   task,
   onComplete,
 }: {
-  task: TaskCardModel;
+  task: TaskModel;
   onComplete: (id: string) => void;
 }) {
   const isYourTurn = task.turn === "your";
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#101B2E]/80 p-4 shadow-[0_10px_25px_rgba(0,0,0,0.35)]">
-      <div className="flex items-center gap-3">
+    <div
+      className={[
+        "rounded-2xl border border-white/10 bg-[#101B2E]/80 p-4",
+        "shadow-[0_10px_25px_rgba(0,0,0,0.35)]",
+        isYourTurn ? "ring-1 ring-[#FF7A18]/35" : "",
+      ].join(" ")}
+    >
+      <div className="flex items-start gap-3">
         <div className="grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-[#152744]/60 text-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
           {task.emoji}
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="truncate text-base font-semibold">{task.name}</div>
-          <div className="mt-1 text-xs text-[#7C88B3]">{task.lastDoneText}</div>
-        </div>
+          <div className="flex items-center gap-2">
+            <div className="truncate text-base font-semibold">{task.name}</div>
+            <span className="rounded-full border border-white/10 bg-[#0B1220]/35 px-2 py-0.5 text-[11px] font-semibold text-[#B8C3E6]">
+              {freqLabel(task.frequency)}
+            </span>
+          </div>
 
-        <Badge turn={task.turn} />
+          <div className="mt-1 text-xs text-[#7C88B3]">Last done: {task.lastDoneText}</div>
+
+          <div className="mt-3 flex items-center justify-between">
+            <span
+              className={[
+                "rounded-full border border-white/10 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide",
+                badgeStyles(task.turn),
+              ].join(" ")}
+            >
+              {isYourTurn ? "Your Turn" : "Their Turn"}
+            </span>
+
+            {isYourTurn ? (
+              <span className="text-xs font-semibold text-[#FF8F3D]">
+                Ready to forge
+              </span>
+            ) : (
+              <span className="text-xs text-[#7C88B3]">Waiting…</span>
+            )}
+          </div>
+        </div>
       </div>
 
       {isYourTurn && (
